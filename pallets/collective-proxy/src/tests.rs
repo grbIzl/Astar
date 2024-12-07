@@ -27,6 +27,7 @@ fn execute_call_fails_for_invalid_origin() {
         assert_noop!(
             CollectiveProxy::execute_call(
                 RuntimeOrigin::signed(1),
+                None,
                 Box::new(RuntimeCall::Balances(BalancesCall::transfer_allow_death {
                     dest: 2,
                     value: 10
@@ -42,9 +43,16 @@ fn execute_call_filters_not_allowed_call() {
     ExtBuilder::build().execute_with(|| {
         let init_balance = Balances::free_balance(COMMUNITY_ACCOUNT);
 
+        assert_ok!(CollectiveProxy::add_proxy(
+            RuntimeOrigin::signed(PRIVILEGED_ACCOUNT),
+            COMMUNITY_ACCOUNT,
+            MockCallFilter::JustTransfer
+        ));
+
         // Call is filtered, but `execute_call` succeeds.
         assert_ok!(CollectiveProxy::execute_call(
             RuntimeOrigin::signed(PRIVILEGED_ACCOUNT),
+            Some(MockCallFilter::JustTransfer),
             Box::new(RuntimeCall::Balances(BalancesCall::transfer_keep_alive {
                 dest: 2,
                 value: 10
@@ -74,8 +82,15 @@ fn execute_call_succeeds() {
         let init_balance = Balances::free_balance(COMMUNITY_ACCOUNT);
         let transfer_value = init_balance / 3;
 
+        assert_ok!(CollectiveProxy::add_proxy(
+            RuntimeOrigin::signed(PRIVILEGED_ACCOUNT),
+            COMMUNITY_ACCOUNT,
+            MockCallFilter::JustTransfer
+        ));
+
         assert_ok!(CollectiveProxy::execute_call(
             RuntimeOrigin::signed(PRIVILEGED_ACCOUNT),
+            Some(MockCallFilter::JustTransfer),
             Box::new(RuntimeCall::Balances(BalancesCall::transfer_allow_death {
                 dest: 2,
                 value: transfer_value

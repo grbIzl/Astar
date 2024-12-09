@@ -1138,6 +1138,7 @@ impl pallet_collective_proxy::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
     type CollectiveProxy = EnsureRootOrTwoThirdsCommunityCouncil;
+    type ProxyAdmin = EnsureRootOrTwoThirdsCommunityCouncil;
     type CallFilter = CommunityCouncilCallFilter;
     type MaxProxies = ConstU32<2>;
     type WeightInfo = pallet_collective_proxy::weights::SubstrateWeight<Runtime>;

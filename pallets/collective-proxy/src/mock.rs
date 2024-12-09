@@ -113,8 +113,6 @@ ord_parameter_types! {
     Clone,
     Eq,
     PartialEq,
-    Ord,
-    PartialOrd,
     std::fmt::Debug,
     parity_scale_codec::Encode,
     parity_scale_codec::Decode,

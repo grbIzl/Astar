@@ -193,11 +193,13 @@ pub mod pallet {
         ) -> DispatchResult {
             T::CollectiveProxy::ensure_origin(origin)?;
             Proxies::<T>::try_mutate(|proxies| -> Result<(), DispatchError> {
-                let proxy_def = ProxyDefinition {
-                    proxy: proxy.clone(),
-                    filter: filter.clone(),
-                };
-                proxies.try_push(proxy_def).map_err(|_| Error::<T>::TooManyProxies)?;
+                if !proxies.iter().any(|p| p.proxy == proxy && p.filter.is_superset(&filter)) {
+                    let proxy_def = ProxyDefinition {
+                        proxy: proxy.clone(),
+                        filter: filter.clone(),
+                    };
+                    proxies.try_push(proxy_def).map_err(|_| Error::<T>::TooManyProxies)?;
+                }
                 Ok(())
             })
         }

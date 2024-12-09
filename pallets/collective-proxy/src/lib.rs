@@ -97,8 +97,6 @@ pub mod pallet {
         type CallFilter: InstanceFilter<<Self as Config>::RuntimeCall>
             + Member
             + Clone
-            + Ord
-            + PartialOrd
             + Encode
             + Decode
             + MaxEncodedLen

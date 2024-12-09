@@ -93,6 +93,9 @@ pub mod pallet {
         /// Origin that can act on behalf of the collective.
         type CollectiveProxy: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
 
+        /// Origin with permissions to add and remove proxies for the collective.
+        type ProxyAdmin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
+
         /// Filter to determine whether a call can be executed or not.
         type CallFilter: InstanceFilter<<Self as Config>::RuntimeCall>
             + Member
@@ -191,7 +194,7 @@ pub mod pallet {
             proxy: T::AccountId,
             filter: T::CallFilter,
         ) -> DispatchResult {
-            T::CollectiveProxy::ensure_origin(origin)?;
+            T::ProxyAdmin::ensure_origin(origin)?;
             Proxies::<T>::try_mutate(|proxies| -> Result<(), DispatchError> {
                 if !proxies.iter().any(|p| p.proxy == proxy && p.filter.is_superset(&filter)) {
                     let proxy_def = ProxyDefinition {
@@ -218,7 +221,7 @@ pub mod pallet {
             proxy: T::AccountId,
             filter: T::CallFilter,
         ) -> DispatchResult {
-            T::CollectiveProxy::ensure_origin(origin)?;
+            T::ProxyAdmin::ensure_origin(origin)?;
             Proxies::<T>::try_mutate(|proxies| -> Result<(), DispatchError> {
                 let proxy_def = ProxyDefinition {
                     proxy: proxy.clone(),

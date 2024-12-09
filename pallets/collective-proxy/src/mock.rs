@@ -146,6 +146,7 @@ impl pallet_collective_proxy::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
     type CollectiveProxy = EnsureSignedBy<CollectiveProxyManager, AccountId>;
+    type ProxyAdmin = EnsureSignedBy<CollectiveProxyManager, AccountId>;
     type CallFilter = MockCallFilter;
     type MaxProxies = ConstU32<2>;
     type WeightInfo = ();

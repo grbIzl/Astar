@@ -39,6 +39,20 @@ fn execute_call_fails_for_invalid_origin() {
 }
 
 #[test]
+fn add_proxy_fails_for_invalid_origin() {
+    ExtBuilder::build().execute_with(|| {
+        assert_noop!(
+            CollectiveProxy::add_proxy(
+                RuntimeOrigin::signed(1),
+                1,
+                MockCallFilter::JustTransfer
+            ),
+            BadOrigin
+        );
+    });
+}
+
+#[test]
 fn execute_call_filters_not_allowed_call() {
     ExtBuilder::build().execute_with(|| {
         let init_balance = Balances::free_balance(COMMUNITY_ACCOUNT);

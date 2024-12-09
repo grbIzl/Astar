@@ -27,7 +27,7 @@ fn execute_call_fails_for_invalid_origin() {
         assert_noop!(
             CollectiveProxy::execute_call(
                 RuntimeOrigin::signed(1),
-                None,
+                1,
                 Box::new(RuntimeCall::Balances(BalancesCall::transfer_allow_death {
                     dest: 2,
                     value: 10
@@ -52,7 +52,7 @@ fn execute_call_filters_not_allowed_call() {
         // Call is filtered, but `execute_call` succeeds.
         assert_ok!(CollectiveProxy::execute_call(
             RuntimeOrigin::signed(PRIVILEGED_ACCOUNT),
-            Some(MockCallFilter::JustTransfer),
+            COMMUNITY_ACCOUNT,
             Box::new(RuntimeCall::Balances(BalancesCall::transfer_keep_alive {
                 dest: 2,
                 value: 10
@@ -90,7 +90,7 @@ fn execute_call_succeeds() {
 
         assert_ok!(CollectiveProxy::execute_call(
             RuntimeOrigin::signed(PRIVILEGED_ACCOUNT),
-            Some(MockCallFilter::JustTransfer),
+            COMMUNITY_ACCOUNT,
             Box::new(RuntimeCall::Balances(BalancesCall::transfer_allow_death {
                 dest: 2,
                 value: transfer_value

@@ -150,13 +150,13 @@ pub mod pallet {
 		})]
         pub fn execute_call(
             origin: OriginFor<T>,
-            filter: Option<T::CallFilter>,
+            proxy: T::AccountId,
             call: Box<<T as Config>::RuntimeCall>,
         ) -> DispatchResult {
             // Ensure origin is valid.
             T::CollectiveProxy::ensure_origin(origin)?;
 
-            let def = Self::find_proxy(filter)?;
+            let def = Self::find_proxy(proxy)?;
 
             // Account authentication is ensured by the `CollectiveProxy` origin check.
             let mut origin: T::RuntimeOrigin =
@@ -230,10 +230,10 @@ pub mod pallet {
 
     impl<T: Config> Pallet<T> {
         pub fn find_proxy(
-            filter: Option<T::CallFilter>,
+            proxy: T::AccountId,
         ) -> Result<ProxyDefinition<T::AccountId, T::CallFilter>, DispatchError> {
             let f = |x: &ProxyDefinition<T::AccountId, T::CallFilter>| -> bool {
-                filter.as_ref().map_or(true, |y| &x.filter == y)
+                x.proxy == proxy
             };
             Ok(Proxies::<T>::get().into_iter().find(f).ok_or(Error::<T>::NotFound)?)
         }

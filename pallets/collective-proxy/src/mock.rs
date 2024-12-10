@@ -108,15 +108,37 @@ ord_parameter_types! {
     pub const CollectiveProxyManager: AccountId = PRIVILEGED_ACCOUNT;
 }
 
-#[derive(Default)]
-pub struct MockCallFilter;
+#[derive(
+    Copy,
+    Clone,
+    Eq,
+    PartialEq,
+    std::fmt::Debug,
+    parity_scale_codec::Encode,
+    parity_scale_codec::Decode,
+    parity_scale_codec::MaxEncodedLen,
+    scale_info::TypeInfo,
+)]
+pub enum MockCallFilter {
+    Any,
+    JustTransfer
+}
+impl Default for MockCallFilter {
+    fn default() -> Self {
+        Self::Any
+    }
+}
 impl InstanceFilter<RuntimeCall> for MockCallFilter {
     fn filter(&self, c: &RuntimeCall) -> bool {
-        matches!(
-            c,
-            RuntimeCall::Balances(pallet_balances::Call::transfer_allow_death { .. })
-                | RuntimeCall::System(frame_system::Call::remark { .. })
-        )
+        match self {
+            MockCallFilter::Any => true,
+            MockCallFilter::JustTransfer => {
+                matches!(
+					c,
+					RuntimeCall::Balances(pallet_balances::Call::transfer_allow_death { .. })
+				)
+            },
+        }
     }
 }
 
@@ -124,7 +146,7 @@ impl pallet_collective_proxy::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
     type CollectiveProxy = EnsureSignedBy<CollectiveProxyManager, AccountId>;
-    type ProxyAccountId = ProxyAccountId;
+    type ProxyAdmin = EnsureSignedBy<CollectiveProxyManager, AccountId>;
     type CallFilter = MockCallFilter;
     type WeightInfo = ();
 }

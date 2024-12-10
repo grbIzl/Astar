@@ -1505,7 +1505,18 @@ parameter_types! {
     pub CommunityTreasuryAccountId: AccountId = CommunityTreasuryPalletId::get().into_account_truncating();
 }
 
-#[derive(Default)]
+#[derive(
+    Copy,
+    Clone,
+    Debug,
+    Default,
+    Eq,
+    PartialEq,
+    parity_scale_codec::Encode,
+    parity_scale_codec::Decode,
+    parity_scale_codec::MaxEncodedLen,
+    scale_info::TypeInfo,
+)]
 pub struct CommunityCouncilCallFilter;
 impl InstanceFilter<RuntimeCall> for CommunityCouncilCallFilter {
     fn filter(&self, c: &RuntimeCall) -> bool {
@@ -1523,7 +1534,7 @@ impl pallet_collective_proxy::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
     type CollectiveProxy = EnsureRootOrHalfCommunityCouncil;
-    type ProxyAccountId = CommunityTreasuryAccountId;
+    type ProxyAdmin = EnsureRootOrHalfCommunityCouncil;
     type CallFilter = CommunityCouncilCallFilter;
     type WeightInfo = pallet_collective_proxy::weights::SubstrateWeight<Runtime>;
 }

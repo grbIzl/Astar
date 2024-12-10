@@ -50,6 +50,8 @@ use core::marker::PhantomData;
 /// Weight functions needed for pallet_collective_proxy.
 pub trait WeightInfo {
 	fn execute_call() -> Weight;
+	fn add_proxy() -> Weight;
+	fn remove_proxy() -> Weight;
 }
 
 /// Weights for pallet_collective_proxy using the Substrate node and recommended hardware.
@@ -62,6 +64,26 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		// Minimum execution time: 7_732_000 picoseconds.
 		Weight::from_parts(7_950_000, 0)
 	}
+	fn add_proxy() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `161 + p * (37 ±0)`
+		//  Estimated: `4706`
+		// Minimum execution time: 21_495_000 picoseconds.
+		Weight::from_parts(22_358_457, 4706)
+			// Standard Error: 1_606
+			.saturating_add(T::DbWeight::get().reads(1_u64))
+			.saturating_add(T::DbWeight::get().writes(1_u64))
+	}
+	fn remove_proxy() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `161 + p * (37 ±0)`
+		//  Estimated: `4706`
+		// Minimum execution time: 21_495_000 picoseconds.
+		Weight::from_parts(22_579_308, 4706)
+			// Standard Error: 2_571
+			.saturating_add(T::DbWeight::get().reads(1_u64))
+			.saturating_add(T::DbWeight::get().writes(1_u64))
+	}
 }
 
 // For backwards compatibility and tests
@@ -72,5 +94,25 @@ impl WeightInfo for () {
 		//  Estimated: `0`
 		// Minimum execution time: 7_732_000 picoseconds.
 		Weight::from_parts(7_950_000, 0)
+	}
+	fn add_proxy() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `161 + p * (37 ±0)`
+		//  Estimated: `4706`
+		// Minimum execution time: 21_495_000 picoseconds.
+		Weight::from_parts(22_358_457, 4706)
+			// Standard Error: 1_606
+			.saturating_add(RocksDbWeight::get().reads(1_u64))
+			.saturating_add(RocksDbWeight::get().writes(1_u64))
+	}
+	fn remove_proxy() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `161 + p * (37 ±0)`
+		//  Estimated: `4706`
+		// Minimum execution time: 21_495_000 picoseconds.
+		Weight::from_parts(22_579_308, 4706)
+			// Standard Error: 2_571
+			.saturating_add(RocksDbWeight::get().reads(1_u64))
+			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
 }

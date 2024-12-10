@@ -98,6 +98,7 @@ pub mod pallet {
 
         /// Filter to determine whether a call can be executed or not.
         type CallFilter: InstanceFilter<<Self as Config>::RuntimeCall>
+            + Parameter
             + Member
             + Clone
             + Encode
@@ -105,10 +106,6 @@ pub mod pallet {
             + MaxEncodedLen
             + TypeInfo
             + Default;
-
-        /// The maximum amount of proxies allowed for a single account.
-        #[pallet::constant]
-        type MaxProxies: Get<u32>;
 
         /// Weight info
         type WeightInfo: WeightInfo;
@@ -123,21 +120,18 @@ pub mod pallet {
 
     #[pallet::error]
     pub enum Error<T> {
-        /// There are too many proxies registered
-        TooManyProxies,
         /// Proxy registration not found.
         NotFound,
     }
 
     /// The set of account proxies
     #[pallet::storage]
-    pub type Proxies<T: Config> = StorageValue<
+    pub type Proxies<T: Config> = StorageMap<
         _,
-        BoundedVec<
-            ProxyDefinition<T::AccountId, T::CallFilter>,
-            T::MaxProxies,
-        >,
-        ValueQuery,
+        Twox64Concat,
+        T::AccountId,
+        T::CallFilter,
+        OptionQuery,
     >;
 
     #[pallet::call]
@@ -188,23 +182,17 @@ pub mod pallet {
         /// - `proxy`: The account that the `caller` would like to make a proxy.
         /// - `filter`: Call filter used for the proxy
         #[pallet::call_index(1)]
-        #[pallet::weight(T::WeightInfo::add_proxy(T::MaxProxies::get()))]
+        #[pallet::weight(T::WeightInfo::add_proxy())]
         pub fn add_proxy(
             origin: OriginFor<T>,
             proxy: T::AccountId,
             filter: T::CallFilter,
         ) -> DispatchResult {
             T::ProxyAdmin::ensure_origin(origin)?;
-            Proxies::<T>::try_mutate(|proxies| -> Result<(), DispatchError> {
-                if !proxies.iter().any(|p| p.proxy == proxy && p.filter.is_superset(&filter)) {
-                    let proxy_def = ProxyDefinition {
-                        proxy: proxy.clone(),
-                        filter: filter.clone(),
-                    };
-                    proxies.try_push(proxy_def).map_err(|_| Error::<T>::TooManyProxies)?;
-                }
-                Ok(())
-            })
+            let proxy = proxy.clone();
+            let filter = filter.clone();
+            Proxies::<T>::insert(proxy, filter);
+            Ok(())
         }
 
         /// Unregister a proxy account for the sender.
@@ -215,21 +203,14 @@ pub mod pallet {
         /// - `proxy`: The account that the `caller` would like to remove as a proxy.
         /// - `filter`: Call filter used for the proxy
         #[pallet::call_index(2)]
-        #[pallet::weight(T::WeightInfo::remove_proxy(T::MaxProxies::get()))]
+        #[pallet::weight(T::WeightInfo::remove_proxy())]
         pub fn remove_proxy(
             origin: OriginFor<T>,
             proxy: T::AccountId,
-            filter: T::CallFilter,
         ) -> DispatchResult {
             T::ProxyAdmin::ensure_origin(origin)?;
-            Proxies::<T>::try_mutate(|proxies| -> Result<(), DispatchError> {
-                let proxy_def = ProxyDefinition {
-                    proxy: proxy.clone(),
-                    filter: filter.clone(),
-                };
-                proxies.retain(|def| def != &proxy_def);
-                Ok(())
-            })
+            Proxies::<T>::remove(proxy);
+            Ok(())
         }
     }
 
@@ -237,10 +218,7 @@ pub mod pallet {
         pub fn find_proxy(
             proxy: T::AccountId,
         ) -> Result<ProxyDefinition<T::AccountId, T::CallFilter>, DispatchError> {
-            let f = |x: &ProxyDefinition<T::AccountId, T::CallFilter>| -> bool {
-                x.proxy == proxy
-            };
-            Ok(Proxies::<T>::get().into_iter().find(f).ok_or(Error::<T>::NotFound)?)
+            Ok(Proxies::<T>::get(&proxy).map(|filter| ProxyDefinition { proxy, filter} ).ok_or(Error::<T>::NotFound)?)
         }
     }
 }

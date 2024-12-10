@@ -148,7 +148,6 @@ impl pallet_collective_proxy::Config for Test {
     type CollectiveProxy = EnsureSignedBy<CollectiveProxyManager, AccountId>;
     type ProxyAdmin = EnsureSignedBy<CollectiveProxyManager, AccountId>;
     type CallFilter = MockCallFilter;
-    type MaxProxies = ConstU32<2>;
     type WeightInfo = ();
 }
 
